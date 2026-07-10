@@ -1,11 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR" style="height: 100%">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="utf-8">
 </head>
-<body>
+<body style="height: 100%; margin: 0">
+  <div id="container" style="height: 100%"></div>
+
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+
+  <script type="text/javascript">
+    var dom = document.getElementById('container');
+    var myChart = echarts.init(dom, 'dark', {
+      renderer: 'canvas',
+      useDirtyRect: false
+    });
     
+    var option;
+
+    var dado_2015 = 386.7; 
+
+    var chuvas = [295.0, 211.5, 764.8, 497.9, 591.3, 388.5, 938.6, 465.6, 378.2, 528.5, 341.9];
+    var anos = ['2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'];
+
+    var placeholderData = [];
+    var aumentoData = [];
+    var reducaoData = [];
+
+    
+    for (var i = 0; i < chuvas.length; i++) {
+      var valorAnterior = (i === 0) ? dado_2015 : chuvas[i - 1];
+      var valorAtual = chuvas[i];
+      var diferenca = valorAtual - valorAnterior;
+
+      if (diferenca >= 0) {
+        placeholderData.push(valorAnterior);
+        aumentoData.push(Number(diferenca.toFixed(1)));
+        reducaoData.push('-');
+      } else {
+        placeholderData.push(valorAtual);
+        aumentoData.push('-');
+        reducaoData.push(Number(Math.abs(diferenca).toFixed(1)));
+      }
+    }
+
+    option = {
+      title: {
+        text: 'Variação da chuva acumulada por ano (2016 a 2026) - Fazenda Carnaúba',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+        formatter: function (params) {
+          let tar = (params[1] && params[1].value !== '-') ? params[1] : params[2];
+          if (!tar) return '';
+          return tar.name + '<br/>' + tar.seriesName + ' : ' + tar.value + ' mm';
+        }
+      },
+      legend: {
+        data: ['Redução', 'Aumento'],
+        top: '3%'
+      },
+      grid: {
+        left: '3%', right: '4%', bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: anos
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: { formatter: '{value} mm' }
+      },
+      series: [
+        {
+          name: 'Placeholder',
+          type: 'bar',
+          stack: 'Total',
+          silent: true,
+          itemStyle: { borderColor: 'transparent', color: 'transparent' },
+          emphasis: { itemStyle: { borderColor: 'transparent', color: 'transparent' } },
+          data: placeholderData
+        },
+        {
+          name: 'Aumento',
+          type: 'bar',
+          stack: 'Total',
+          label: { show: true, position: 'top' },
+          itemStyle: { color: '#1ab394' }, 
+          data: aumentoData
+        },
+        {
+          name: 'Redução',
+          type: 'bar',
+          stack: 'Total',
+          label: { show: true, position: 'bottom' },
+          itemStyle: { color: '#f8ac59' },
+          data: reducaoData
+        }
+      ],
+      dataZoom: [
+            {
+            type: 'slider',
+            start: 0,
+            end: 50
+            },
+            {
+            type: 'inside'
+            }
+        ],
+    };
+
+    if (option && typeof option === 'object') {
+      myChart.setOption(option);
+    }
+    window.addEventListener('resize', myChart.resize);
+  </script>
 </body>
 </html>
